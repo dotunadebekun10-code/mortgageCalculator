@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- displays site properly based on user's device -->
+
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+  <title>Mortgage repayment calculator</title>
+
+  <style>
+    body{background-color: hsl(203, 41%, 72%); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: Plus Jakarta Sans;}
+    .container{display: flex; background: #fff; border-radius: 5px; box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.7); max-width: 850px; width: 100%;}
+    .calculator{padding: 25px; flex: 1;}
+    .calculator h2{margin-bottom: 15px;}
+    .calculator .input-wrapper input{ transition: all 0.5s ease;}
+    .calculator .input-wrapper input:hover{border-color: #1c1c1c;}
+    .calculator .input-wrapper input:focus{border-color: #1c1c1c;}
+    .clear{float: right; cursor: pointer; font-size: 12px; color: grey; border-bottom: solid;}
+    label{display: block; margin-top: 15px; font-size: 14px;}
+    input{width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px;}
+    .input-inline{display: flex; gap: 10px;}
+    .input-inline input{flex: 1;}
+    .input-wrapper{position: relative; display: flex; align-items: center; }
+    .input-wrapper input{width: 100%; padding: 10px 35px 10px 25px;}
+    .input-wrapper span{position: absolute; color: grey;}
+    .input-wrapper .prefix{left: 10px;}
+    .input-wrapper .suffix{right: 10px;}
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {-webkit-appearance: none; margin: 0;}
+    .mortgage-type{margin-top: 15px; display: flex; flex-direction: column; gap: 10px;}
+    .mortgage-type .option{display: flex; align-items: center; border: 1px solid #ccc; border-radius: 5px; padding: 12px; cursor: pointer; transition: all 0.5s ease;}
+    .mortgage-type .option input{margin-right: 10px; accent-color: hsl(61, 70%, 52%); max-width: 5%; width: 100%;}
+    .mortgage-type .option:hover{border-color:hsl(61, 70%, 52%)}
+    .mortgage-type .option:active { background-color:hsl(60, 20%, 93%); border-color: hsl(61, 70%, 52%);}
+
+    button{background: hsl(61, 70%, 52%); border: none; padding: 12px; margin-top: 20px; max-width: 75%; width: 100%; font-size: 14px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);}
+    .results{background-color: hsl(202, 55%, 16%); color: #fff; padding: 30px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;}
+    .results img{max-width: 120px; margin-bottom: 15px;}
+    .highlight{font-size: 28px; font-weight: bold; color: hsl(61, 70%, 52%)}
+    button:hover{background: hsl(61, 47%, 58%);}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+
+@media (max-width: 600px) {
+  body {
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    padding: 10px;
+  }
+
+  .container {
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 10px;
+  }
+
+  .input-inline {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .results {
+    margin-top: 20px;
+    border-radius: 10px;
+  }
+
+  button {
+    max-width: 100%;
+    font-size: 16px;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="calculator">
+      <h2>Mortgage calculator
+        <span class="clear" onclick="resetCalculator()">Clear All</span>
+      </h2>
+      
+      <label for="Amount">Mortgage Amount</label>
+      <div class="input-wrapper">
+        <span class="prefix">$</span>
+        <input type="number" name="" id="Amount" min="0" required>
+      </div>
+      
+      <div class="input-inline">
+        <div>
+          <label for="years">Mortgage Term</label>
+          <div class="input-wrapper">
+            <input type="number" id="years" min="0" required>
+            <span class="suffix">years</span>
+          </div>
+        </div>
+        <div>
+          <label for="Rate">Interest Rate</label>
+          <div class="input-wrapper">
+            <input type="number" name="" id="Rate" step="0.01" >
+            <span class="suffix">%</span>
+          </div>       
+      </div>
+      </div>
+      <div class="mortgage-type">
+        <label for="">Mortgage Type</label>
+        <label for="" class="option">
+          <input type="radio" name="type" value="repayment" checked>
+          <span>Repayment</span>
+        </label>
+        <label for="" class="option">
+          <input type="radio" name="type" name="type" value="Interest">
+          <span>Interest</span>
+        </label>
+      </div>
+      <button onclick="calculateMortgage()"><img src="icon-calculator.svg" alt="" srcset="" style="width: 11px;">Calculate Repayment</button>
+    </div>
+
+
+    <div class="results" id="results-box">
+      <img src="illustration-empty.svg" alt="Illustration">
+      <h3>Results shown here</h3>
+      <p>Complete the form and click "Calculate Repayment" to see what your monthly repayments would be.</p>
+    </div>
+  </div>
+
+
+  <script>
+    function calculateMortgage() {
+      const amount = parseFloat(document.getElementById('Amount').value);
+      const years = parseFloat(document.getElementById('years').value);
+      const rateInput = parseFloat(document.getElementById('Rate').value);
+      const rate = (rateInput / 100) / 12;
+
+      const n = years * 12;
+      const type = document.querySelector('input[name="type"]:checked').value;
+
+      if (amount <= 0 || years <= 0 || isNaN(amount) || isNaN(years) || isNaN(rateInput)) {
+        alert('Please enter valid values greater than zero.');
+        return;
+      }
+
+      let monthly, total;
+      if (type === 'repayment') {
+        if (rate === 0) {
+          monthly = amount / n;
+          total = amount;
+        } else {
+          monthly = amount * (rate * Math.pow(1 + rate, n)) / (Math.pow(1 + rate, n) - 1);
+          total = monthly * n;
+        }
+      } else {
+        monthly = amount * rate;
+        total = monthly * n;
+      }
+
+      document.getElementById('results-box').innerHTML = `
+        <h3>Your results</h3>
+        <p>Your monthly repayments</p>
+        <p class="highlight">$${monthly.toFixed(2)}</p>
+        <p>Total you'll repay over the term</p>
+        <p>$${total.toFixed(2)}</p>
+      `;
+    }
+
+    function resetCalculator() {
+      document.getElementById('Amount').value = "";
+      document.getElementById('years').value = "";
+      document.getElementById('Rate').value = "";
+      document.querySelector('input[name="type"][value="repayment"]').checked = true;
+
+      document.getElementById('results-box').innerHTML = `
+      <img src="illustration-empty.svg" alt="Illustration">
+        <h3>Results shown here</h3>
+        <p>Complete the form and click <b>“calculate repayments”</b> to see what your monthly repayments would be.</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
